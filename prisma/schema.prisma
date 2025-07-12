@@ -1,0 +1,711 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+enum UserType {
+  FREE
+  PREMIUM
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum CollaboratorRole {
+  EDITOR
+  VIEWER
+  NONE
+}
+
+enum TripStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  EMAIL
+  PUSH_NOTIFICATION
+}
+
+enum ExpenseCategory {
+  FOOD
+  LODGING
+  TRANSPORT
+  TICKETS
+  SHOPPING
+  MISC
+}
+
+enum ItineraryItemCategory {
+  FLIGHT
+  HOTEL
+  ACTIVITY
+  RESTAURANT
+  TRANSPORTATION
+  MEETING
+  OTHER
+}
+
+enum BadgeSlug {
+  // TRAVEL MILESTONES
+  FIRST_TRIP
+  FREQUENT_TRIP
+  WORLD_WANDERER
+  LEGENDARY_NOMAD
+  // SOCIAL INTERACTION/ENGAGEMENT
+  SOCIAL_STARTER
+  SOCIAL_INFLUENCER
+  TRAVEL_AMBASSADOR
+  ENGAGEMENT_STAR
+  // BUDGETING / SMART PLANNING
+  BUDGET_TRAVELER
+  FINANCIAL_NINJA
+  SAVINGS_MASTERMIND
+  // CONTENT / JOURNALING
+  FIRST_JOURNAL_ENTRY
+  STORYTELLER
+  PHOTOGRAPHER
+  CREATOR_LEGEND
+  VISUAL_STORYTELLER
+}
+
+enum BadgeCategory {
+  TRAVEL_MILESTONES
+  SOCIAL_ENGAGEMENT
+  FINANCIAL_PLANNING
+  CONTENT_CREATION
+}
+
+enum BadgeRarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum PhotoStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  MODERATION_FAILED
+  FAILED
+  PROCESSING
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  MODERATION_FAILED
+}
+
+enum JournalStatus {
+  APPROVED
+  REJECTED
+  PENDING
+  MODERATION_FAILED
+  DRAFT // For entries that are still being written
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  REQUIRES_ACTION
+}
+
+enum PaymentType {
+  SUBSCRIPTION
+  ONE_TIME
+  REFUND
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+}
+
+enum WebhookEventStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
+model User {
+  id  String  @id @default(uuid())
+  email String  @unique
+  hashedPassword String?
+
+  fullName String?
+  isVerified Boolean @default(false)
+  userType UserType @default(FREE)
+  userRole UserRole @default(USER)
+  profilePictureUrl String?
+  stripeCustomerId String?        @unique
+
+  refreshToken String?
+  refreshTokenExpiry DateTime?
+  refreshTokenJti String?
+  lastLogin DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // for social logins
+  provider String?
+  providerId String?
+  isSocialLogin Boolean @default(false)
+
+  // for badges and gamification
+  totalPoints Int @default(0)
+
+  deleted   Boolean  @default(false)
+  deletedAt DateTime?
+
+  settings UserSettings?
+  ownedTrips Trip[] @relation("UserTrips")
+  userExpenses Expense[] @relation("UserExpenses")
+  collaborations TripCollaborator[]
+  notifications Notification[]
+  userBadges  UserBadge[]
+  photoLikes    PhotoLike[]
+  photoComments PhotoComment[]
+
+  // Payment relationships
+  subscriptions Subscription[] @relation("UserSubscriptions")
+  payments      Payment[]     @relation("UserPayments")
+
+  @@unique([provider, providerId])
+  @@index([email])
+  @@index([deleted])
+
+  PackingListItem PackingListItem[]
+  journalEntries JournalEntry[]
+  itineraryItems  ItineraryItem[]
+  AIRequestLog AIRequestLog[]
+}
+
+model AIRequestLog {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  requestType String   // e.g., 'itinerary_suggestion', 'description_generation', 'smart_budget'
+  count       Int      @default(1)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@index([requestType])
+}
+
+model UserSettings {
+  id String @id @default(uuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id])
+
+  receivesNotifications Boolean @default(true) 
+  darkMode Boolean @default(false)
+  language String @default("en")
+  timezone String? // User's preferred timezone, e.g., "America/New_York"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Location {
+  id String @id @default(uuid())
+  placeId String @unique // Unique identifier for the location, e.g., from Google Places API
+  name String // Name of the location, e.g., "Eiffel Tower"
+  formattedAddress String? // Formatted address for display purposes
+  lat Float
+  lng Float
+  country String?
+  city String?
+  state String?
+  countryCode String?
+  currencyCode  String?
+  currencySymbol  String?
+  language  String?
+  timezone String? // Timezone of the location, e.g., "Europe/Paris"
+
+  apiResponse Json? // Store the full API response for future reference
+
+  // FR001: Curated locations for trip suggestions
+  description String?
+  imageUrl String?
+
+  // A location can be the destination for many trips.
+  trips Trip[]
+
+  // A location can be featured in our curated content
+  featuredIn  Destination[]
+
+  // Itinerary items will point to specific locations
+  itineraryItems ItineraryItem[]
+  pointsOfInterest PointOfInterest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([placeId])
+  @@index([lat, lng])
+
+  @@map("locations") // Use a more descriptive table name
+}
+
+model PointOfInterest {
+  id          String   @id @default(uuid())
+  locationId  String   /// Links this POI to a parent Location (e.g., The Eiffel Tower is in Paris).
+  location    Location @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  
+  placeId     String   @unique /// The unique ID from the external places API (e.g., Mapbox or Google).
+  name        String   /// Name of the POI (e.g., "Eiffel Tower").
+  category    String   /// Category from the API (e.g., "landmark", "hotel", "restaurant").
+  address     String?  /// The address of the POI.
+  description String?  @db.Text /// A detailed description, either from an API or curated by us. PRIME RAG MATERIAL.
+  rating      Float?   /// A rating, e.g., 1-5.
+  imageUrl    String?  /// A URL to an image of the POI.
+  source  String?
+  
+  // RAG Opportunity: Store vector embeddings of the description for semantic search.
+  embedding   Unsupported("vector(768)")?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([locationId])
+  @@index([placeId])
+}
+
+model Trip {
+  id String @id @default(uuid())
+  tripName String // Trip title (e.g., "Lagos Adventure")
+  description String?
+  startDate DateTime
+  endDate DateTime?
+  isPublic Boolean @default(false) // Whether the trip is public or private
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownerId String
+  owner           User       @relation("UserTrips", fields: [ownerId], references: [id], onDelete: Restrict)
+
+  locationId String?
+  location   Location? @relation(fields: [locationId], references: [id])
+  
+  tripStatus TripStatus
+  // FR008: Budget Tracking
+  estimatedBudget Decimal?
+  deleted   Boolean  @default(false)
+  deletedAt DateTime?
+  
+  // Relationships
+  itineraryItems  ItineraryItem[]
+  collaborators   TripCollaborator[]
+  packingList     PackingListItem[]
+  expenses        Expense[]
+  journalEntries  JournalEntry[]
+  
+  @@index([ownerId])
+  @@index([locationId])
+  @@index([deleted])
+  @@index([tripStatus])
+  @@index([startDate, endDate])
+  @@index([ownerId, tripStatus])
+}
+
+/// FR008: Budget Tracking feature
+model Expense {
+  id          String         @id @default(uuid())
+  userId  String
+  user  User  @relation("UserExpenses", fields: [userId], references: [id], onDelete: Restrict)
+  tripId      String
+  trip        Trip           @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  
+  description String
+  amount      Decimal
+  category    ExpenseCategory
+  date        DateTime
+  currency String @default("USD")
+  isAutogenerated Boolean @default(false)
+
+  @@index([tripId])
+  @@index([userId])
+  @@index([tripId, date])
+  @@index([category])
+}
+model Photo {
+  id              String   @id @default(uuid())
+  url             String
+  caption         String?
+  isPublic        Boolean  @default(false)
+  journalEntryId  String
+  journalEntry    JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  status          PhotoStatus @default(PENDING)
+  moderationReason String?
+
+  deleted          Boolean     @default(false)
+  deletedAt        DateTime?
+
+  likes           PhotoLike[]
+  comments        PhotoComment[]
+
+  @@index([journalEntryId])
+}
+
+model PhotoLike {
+  id        String   @id @default(uuid())
+  photoId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([photoId, userId])
+  @@index([photoId])
+  @@index([userId])
+  @@index([photoId, createdAt])
+}
+
+model PhotoComment {
+  id        String   @id @default(uuid())
+  photoId   String
+  userId    String
+  content   String   @db.Text
+  status          CommentStatus @default(PENDING)
+  moderationReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deleted          Boolean       @default(false)
+  deletedAt        DateTime?
+
+  // TODO: FIX THE NAME FROM hoto TO photo
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade) // Comments are tightly coupled
+  user  User  @relation(fields: [userId], references: [id], onDelete: Restrict) // User is soft-deleted, so restrict
+
+
+  @@index([photoId])
+  @@index([userId])
+  @@index([photoId, createdAt])
+}
+
+
+model TripCollaborator {
+  id        String   @id @default(uuid())
+  tripId    String
+  userId    String
+  role      CollaboratorRole     @default(VIEWER)
+  
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  
+  @@unique([tripId, userId])
+  @@index([userId])
+}
+
+/// FR012: Reusable templates for creating trips
+model TripTemplate {
+  id               String   @id @default(uuid())
+  name             String
+  description      String
+  durationInDays   Int
+  
+  destinationId    String
+  destination      Destination @relation(fields: [destinationId], references: [id])
+  
+  // RAG Opportunity: Store vector embeddings for finding relevant templates.
+  // embedding        Unsupported("vector(3072)")?
+  
+  templateItems    Json // Store a JSON array of template activities
+
+  @@index([destinationId])
+}
+
+/// FR010: Curated destination content for discovery
+model Destination {
+  id               String   @id @default(uuid())
+  name             String   @unique //e.g Lagos
+  country          String
+  description      String?  @db.Text
+  imageUrl         String?
+  bestTimeToVisit  String?
+
+  locationId       String @unique
+  location         Location @relation(fields: [locationId], references: [id])
+  
+  // RAG Opportunity: Store vector embeddings for semantic search
+  // You need the pgvector extension for this to work.
+ embedding   Unsupported("vector(768)")?
+
+  tripTemplates    TripTemplate[]
+
+  @@index([name])
+}
+
+
+
+/// FR003, FR004: Activities, bookings, and other events in a trip
+model ItineraryItem {
+  id          String                @id @default(uuid())
+  userId      String
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Restrict)
+  tripId      String
+  trip        Trip                  @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String?
+  category    ItineraryItemCategory
+  startTime   DateTime
+  endTime     DateTime?
+
+  locationId    String?
+  location      Location?             @relation(fields: [locationId], references: [id])
+  
+  // From AI suggestions or manual entry
+  isAISuggestion Boolean @default(false) /// FR003 Indicator
+  
+  // Relationships
+  notifications Notification[]
+
+  @@index([tripId])
+}
+
+
+/// FR013: Packing checklists for trips
+model PackingListItem {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  tripId    String
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  itemName  String
+  isPacked  Boolean  @default(false)
+  @@index([userId])
+  @@index([tripId])
+}
+
+/// FR020: Travel Journal with photo uploads
+model JournalEntry {
+  id        String   @id @default(uuid())
+  tripId    String
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  journalStatus JournalStatus @default(PENDING) // Status of the journal entry
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  title     String
+  content   String   @db.Text
+  date      DateTime
+
+  isPublic  Boolean  @default(false)
+  moderationReason String?
+
+  // RAG: Store vector embeddings of the entry for summarization and semantic search.
+  embedding   Unsupported("vector(768)")?
+
+  photos    Photo[]
+
+  @@index([tripId])
+  @@index([userId])
+  @@index([isPublic])
+  @@index([date])
+  
+  // FIX: Add compound indexes for common query patterns.
+  @@index([tripId, journalStatus, date])
+  @@index([userId, journalStatus, date])
+}
+
+
+
+/// FR023: Gamification and loyalty tracking
+model Badge {
+  id          String      @id @default(uuid())
+  slug       BadgeSlug   @unique
+  name        String      @unique
+  description String
+  category    BadgeCategory
+  rarity      BadgeRarity @default(COMMON)
+  iconUrl     String
+  points      Int @default(0) // Points awarded for earning this badge
+  // Used for DISPLAY purposes and for a potential future rules engine.
+  // e.g., { "description": "Complete 5 international trips." }
+  criteria    Json
+  isActive   Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  userBadges  UserBadge[]
+
+  @@index([category])
+  @@index([rarity])
+  @@index([isActive])
+  @@index([points])
+}
+
+model UserBadge {
+  id        String   @id @default(uuid())
+  userId    String
+  badgeId   String
+  earnedAt  DateTime @default(now())
+
+  // Additional context about how the badge was earned
+  // e.g., { "tripId": "xyz", "milestone": "5th_trip" }
+  metadata  Json?
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Restrict)
+  
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@index([badgeId])
+  @@index([earnedAt])
+  @@index([userId, earnedAt])
+}
+
+
+/// FR007: Schema for sending notifications
+model Notification {
+  id              String           @id @default(uuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  
+  itineraryItemId String?
+  itineraryItem   ItineraryItem?    @relation(fields: [itineraryItemId], references: [id], onDelete: Cascade)
+
+  type            NotificationType
+  sendAt          DateTime
+  read  Boolean @default(false)
+  readAt  DateTime?
+  payload         Json?
+
+  createdAt DateTime
+  updatedAt DateTime
+
+  @@index([userId, sendAt])
+  @@index([userId, read])
+  @@index([type])
+  @@index([sendAt])
+}
+
+model Product {
+  id            String @id @default(uuid())
+  name          String @unique
+  description   String?
+  stripeProductId String @unique
+  isActive      Boolean @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  plans         Plan[]
+
+  @@index([stripeProductId])
+}
+
+model Plan {
+  id            String    @id @default(uuid())
+  name          String    @unique
+  description   String?
+  price         Decimal
+  currency      String    @default("USD")
+  interval      String    // e.g., 'month', 'year'
+  stripePriceId String    @unique
+  features      Json      // Store features as JSON
+  isActive      Boolean   @default(true)
+  productId     String
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  subscriptions Subscription[]
+
+  @@index([isActive])
+  @@index([stripePriceId])
+  @@index([productId])
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  userId               String
+  user                 User               @relation("UserSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
+  planId               String
+  plan                 Plan               @relation(fields: [planId], references: [id], onDelete: Restrict)
+  stripeSubscriptionId String             @unique
+  status               SubscriptionStatus
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean            @default(false)
+  cancelledAt          DateTime?
+  endedAt              DateTime?          // When the subscription was definitively ended (cancelled immediately).
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  payments             Payment[]
+
+  @@index([userId])
+  @@index([stripeSubscriptionId])
+  @@index([status])
+  @@index([currentPeriodEnd])
+}
+
+model Payment {
+  id                    String        @id @default(uuid())
+  userId                String
+  user                  User          @relation("UserPayments", fields: [userId], references: [id], onDelete: Cascade)
+  subscriptionId        String?
+  subscription          Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  stripePaymentIntentId String        @unique
+  amount                Decimal
+  currency              String        @default("USD")
+  status                PaymentStatus
+  type                  PaymentType
+  description           String?
+  metadata              Json?         // Store additional payment metadata
+  idempotencyKey        String?       @unique // Can be null for payments initiated from subscriptions
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([stripePaymentIntentId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([idempotencyKey])
+}
+
+model WebhookEvent {
+  id            String             @id @default(uuid())
+  stripeEventId String             @unique
+  eventType     String
+  status        WebhookEventStatus @default(PENDING)
+  processedAt   DateTime?
+  retryCount    Int                @default(0)
+  payload       Json               // Store the full webhook payload
+  errorMessage  String?
+  source        String?            // e.g., the IP address of the caller for traceability
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([stripeEventId])
+  @@index([eventType])
+  @@index([status])
+}
+
