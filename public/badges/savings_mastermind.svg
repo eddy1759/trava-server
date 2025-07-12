@@ -1,0 +1,47 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="savingsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00BCD4;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#0097A7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#006064;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Hexagonal frame -->
+  <polygon points="50,8 82,25 82,75 50,92 18,75 18,25" fill="url(#savingsGrad)" stroke="#004D40" stroke-width="2"/>
+  <polygon points="50,18 72,30 72,70 50,82 28,70 28,30" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Safe/Vault -->
+  <rect x="35" y="35" width="30" height="25" rx="3" fill="#37474F" stroke="#263238" stroke-width="2"/>
+  <rect x="37" y="37" width="26" height="21" rx="2" fill="#455A64"/>
+  
+  <!-- Vault door handle -->
+  <circle cx="55" cy="47" r="6" fill="#FFD700" stroke="#FFA000" stroke-width="1"/>
+  <circle cx="55" cy="47" r="4" fill="#37474F"/>
+  <circle cx="55" cy="47" r="2" fill="#FFD700"/>
+  
+  <!-- Lock mechanism -->
+  <rect x="40" y="44" width="8" height="6" rx="1" fill="#263238"/>
+  <circle cx="42" cy="45" r="1" fill="#4CAF50"/>
+  <circle cx="44" cy="45" r="1" fill="#4CAF50"/>
+  <circle cx="46" cy="45" r="1" fill="#4CAF50"/>
+  <circle cx="42" cy="48" r="1" fill="#4CAF50"/>
+  <circle cx="44" cy="48" r="1" fill="#4CAF50"/>
+  <circle cx="46" cy="48" r="1" fill="#4CAF50"/>
+  
+  <!-- Money stack -->
+  <rect x="42" y="62" width="16" height="8" fill="#4CAF50"/>
+  <rect x="42" y="64" width="16" height="1" fill="#2E7D32"/>
+  <rect x="42" y="66" width="16" height="1" fill="#2E7D32"/>
+  <rect x="42" y="68" width="16" height="1" fill="#2E7D32"/>
+  
+  <!-- Brain icon (mastermind) -->
+  <path d="M42 25 Q50 20 58 25 Q60 30 58 35 Q50 40 42 35 Q40 30 42 25" fill="#E91E63" stroke="#AD1457" stroke-width="1"/>
+  <path d="M45 28 Q50 26 55 28 Q54 32 50 33 Q46 32 45 28" fill="#FFFFFF" opacity="0.3"/>
+  
+  <!-- Dollar signs floating -->
+  <text x="25" y="50" text-anchor="middle" fill="#FFD700" font-family="Arial, sans-serif" font-size="12" font-weight="bold">$</text>
+  <text x="75" y="45" text-anchor="middle" fill="#FFD700" font-family="Arial, sans-serif" font-size="10" font-weight="bold">$</text>
+  <text x="30" y="75" text-anchor="middle" fill="#FFD700" font-family="Arial, sans-serif" font-size="8" font-weight="bold">$</text>
+  <text x="70" y="75" text-anchor="middle" fill="#FFD700" font-family="Arial, sans-serif" font-size="8" font-weight="bold">$</text>
+</svg>

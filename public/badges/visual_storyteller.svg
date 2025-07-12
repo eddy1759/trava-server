@@ -1,0 +1,72 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="visualGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF5722;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#E64A19;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D84315;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Hexagonal frame -->
+  <polygon points="50,5 85,25 85,75 50,95 15,75 15,25" fill="url(#visualGrad)" stroke="#BF360C" stroke-width="2"/>
+  <polygon points="50,15 75,30 75,70 50,85 25,70 25,30" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Film strip -->
+  <rect x="20" y="35" width="60" height="30" rx="2" fill="#263238" stroke="#000000" stroke-width="1"/>
+  
+  <!-- Film perforations -->
+  <rect x="22" y="37" width="3" height="2" fill="#37474F"/>
+  <rect x="22" y="41" width="3" height="2" fill="#37474F"/>
+  <rect x="22" y="45" width="3" height="2" fill="#37474F"/>
+  <rect x="22" y="49" width="3" height="2" fill="#37474F"/>
+  <rect x="22" y="53" width="3" height="2" fill="#37474F"/>
+  <rect x="22" y="57" width="3" height="2" fill="#37474F"/>
+  <rect x="22" y="61" width="3" height="2" fill="#37474F"/>
+  
+  <rect x="75" y="37" width="3" height="2" fill="#37474F"/>
+  <rect x="75" y="41" width="3" height="2" fill="#37474F"/>
+  <rect x="75" y="45" width="3" height="2" fill="#37474F"/>
+  <rect x="75" y="49" width="3" height="2" fill="#37474F"/>
+  <rect x="75" y="53" width="3" height="2" fill="#37474F"/>
+  <rect x="75" y="57" width="3" height="2" fill="#37474F"/>
+  <rect x="75" y="61" width="3" height="2" fill="#37474F"/>
+  
+  <!-- Photo frames -->
+  <rect x="28" y="38" width="12" height="9" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="43" y="38" width="12" height="9" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="58" y="38" width="12" height="9" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/>
+  
+  <rect x="28" y="51" width="12" height="9" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="43" y="51" width="12" height="9" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="58" y="51" width="12" height="9" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/>
+  
+  <!-- Photo content (simplified) -->
+  <circle cx="34" cy="42" r="2" fill="#FFD54F"/>
+  <path d="M30 45 L32 43 L36 45 L38 47" stroke="#4CAF50" stroke-width="1" fill="none"/>
+  
+  <rect x="45" y="40" width="8" height="5" fill="#2196F3"/>
+  <circle cx="49" cy="42" r="1" fill="#FFFFFF"/>
+  
+  <polygon points="60,40 65,43 70,40 68,46 62,46" fill="#FF9800"/>
+  
+  <circle cx="34" cy="55" r="2" fill="#E91E63"/>
+  <rect x="30" y="57" width="8" height="2" fill="#9C27B0"/>
+  
+  <path d="M45 53 L47 55 L49 53 L51 55 L53 53 L53 59 L45 59 Z" fill="#4CAF50"/>
+  
+  <circle cx="64" cy="55" r="3" fill="#FF5722"/>
+  <circle cx="64" cy="55" r="1" fill="#FFFFFF"/>
+  
+  <!-- Story flow arrow -->
+  <path d="M15 25 Q25 15 35 25" stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.8"/>
+  <path d="M32 22 L35 25 L32 28" stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.8"/>
+  
+  <!-- Book icon (storytelling) -->
+  <rect x="35" y="15" width="30" height="15" rx="2" fill="#8D6E63" stroke="#5D4037" stroke-width="1"/>
+  <rect x="37" y="17" width="26" height="11" rx="1" fill="#BCAAA4"/>
+  <rect x="39" y="19" width="22" height="1" fill="#5D4037"/>
+  <rect x="39" y="21" width="18" height="1" fill="#5D4037"/>
+  <rect x="39" y="23" width="20" height="1" fill="#5D4037"/>
+  <rect x="39" y="25" width="16" height="1" fill="#5D4037"/>
+  <path d="M50 15 L50 30" stroke="#5D4037" stroke-width="1"/>
+</svg>

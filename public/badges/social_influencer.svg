@@ -1,0 +1,26 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="influencerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E91E63;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#9C27B0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#673AB7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Diamond shape -->
+  <path d="M50 10 L80 50 L50 90 L20 50 Z" fill="url(#influencerGrad)" stroke="#4A148C" stroke-width="2"/>
+  <path d="M50 20 L70 50 L50 80 L30 50 Z" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Megaphone -->
+  <path d="M35 40 L55 35 L65 40 L65 50 L55 55 L35 50 Z" fill="#FFFFFF"/>
+  <path d="M65 42 L75 38 L78 42 L75 52 L72 48 L65 50 Z" fill="#FFFFFF"/>
+  <circle cx="32" cy="45" r="3" fill="#FFFFFF"/>
+  
+  <!-- Sound waves -->
+  <path d="M78 35 Q85 40 85 45 Q85 50 78 55" stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.6"/>
+  <path d="M80 32 Q90 38 90 45 Q90 52 80 58" stroke="#FFFFFF" stroke-width="1" fill="none" opacity="0.4"/>
+  
+  <!-- Hearts (likes) -->
+  <path d="M25 60 Q20 55 15 60 Q15 65 25 70 Q35 65 35 60 Q30 55 25 60" fill="#FF4081"/>
+  <path d="M75 25 Q70 20 65 25 Q65 30 75 35 Q85 30 85 25 Q80 20 75 25" fill="#FF4081"/>
+</svg>

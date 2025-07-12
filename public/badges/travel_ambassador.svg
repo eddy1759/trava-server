@@ -1,0 +1,47 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ambassadorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="25%" style="stop-color:#FFA726;stop-opacity:1" />
+      <stop offset="75%" style="stop-color:#FF7043;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D32F2F;stop-opacity:1" />
+    </linearGradient>
+    <filter id="ambassadorGlow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Ornate badge shape -->
+  <circle cx="50" cy="50" r="45" fill="url(#ambassadorGrad)" stroke="#B71C1C" stroke-width="3" filter="url(#ambassadorGlow)"/>
+  <circle cx="50" cy="50" r="35" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.4"/>
+  <circle cx="50" cy="50" r="25" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Ambassador seal -->
+  <circle cx="50" cy="50" r="20" fill="#FFFFFF" opacity="0.9"/>
+  <circle cx="50" cy="50" r="18" fill="url(#ambassadorGrad)"/>
+  
+  <!-- Globe with orbital rings -->
+  <circle cx="50" cy="50" r="12" fill="#2196F3"/>
+  <ellipse cx="50" cy="50" rx="16" ry="8" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.7"/>
+  <ellipse cx="50" cy="50" rx="8" ry="16" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.7"/>
+  
+  <!-- Continents -->
+  <path d="M45 45 Q50 42 55 45 Q52 52 48 48 Z" fill="#4CAF50"/>
+  <path d="M42 52 Q48 50 50 54 Q46 58 42 55 Z" fill="#4CAF50"/>
+  
+  <!-- Laurel wreaths -->
+  <path d="M20 35 Q25 30 30 35 Q25 40 20 35" fill="#4CAF50"/>
+  <path d="M22 40 Q27 35 32 40 Q27 45 22 40" fill="#4CAF50"/>
+  <path d="M80 35 Q75 30 70 35 Q75 40 80 35" fill="#4CAF50"/>
+  <path d="M78 40 Q73 35 68 40 Q73 45 78 40" fill="#4CAF50"/>
+  
+  <!-- Crown -->
+  <path d="M42 25 L45 15 L50 20 L55 15 L58 25" fill="#FFD700" stroke="#FFA000" stroke-width="1"/>
+  <circle cx="45" cy="18" r="2" fill="#FF1744"/>
+  <circle cx="55" cy="18" r="2" fill="#FF1744"/>
+  <circle cx="50" cy="15" r="2" fill="#FF1744"/>
+</svg>
