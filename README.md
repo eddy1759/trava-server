@@ -60,13 +60,13 @@ A comprehensive travel planning and management platform with premium features, r
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/trava-server.git
+git clone https://github.com/eddy1759/trava-server.git
 cd trava-server
 ```
 
 ### 2. Install Dependencies
 ```bash
-npm install
+pnpm install
 ```
 
 ### 3. Environment Setup
@@ -113,7 +113,7 @@ RABBITMQ_URL="amqp://localhost:5672"
 npx prisma migrate dev
 
 # Seed database
-npm run seed
+pnpm run seed
 ```
 
 ### 5. Start Services
@@ -121,13 +121,13 @@ npm run seed
 #### Development Mode
 ```bash
 # Start API server
-npm run dev
+pnpm run dev
 
 # Start workers (in separate terminal)
-npm run workers
+pnpm run workers
 
 # Start email processor (in separate terminal)
-npm run email-worker
+pnpm run email-worker
 ```
 
 #### Production Mode
@@ -203,25 +203,25 @@ RATE_LIMIT_MAX_REQUESTS=100
 ### Run Tests
 ```bash
 # Unit tests
-npm test
+pnpm test
 
 # Integration tests
-npm run test:integration
+pnpm run test:integration
 
 # E2E tests
-npm run test:e2e
+pnpm run test:e2e
 
 # Coverage report
-npm run test:coverage
+pnpm run test:coverage
 ```
 
 ### Test Database
 ```bash
 # Setup test database
-npm run test:setup
+pnpm run test:setup
 
 # Clean test database
-npm run test:clean
+pnpm run test:clean
 ```
 
 ## 📊 Monitoring
@@ -234,10 +234,10 @@ npm run test:clean
 ### Logging
 ```bash
 # View logs
-npm run logs
+pnpm run logs
 
 # View worker logs
-npm run logs:workers
+pnpm run logs:workers
 ```
 
 ### Metrics
@@ -288,13 +288,13 @@ docker-compose logs -f
 ### Code Style
 ```bash
 # Format code
-npm run format
+pnpm run format
 
 # Lint code
-npm run lint
+pnpm run lint
 
 # Fix linting issues
-npm run lint:fix
+pnpm run lint:fix
 ```
 
 ### Commit Convention
@@ -351,10 +351,10 @@ redis-cli FLUSHALL
 #### Queue Issues
 ```bash
 # Check queue status
-npm run queues:status
+pnpm run queues:status
 
 # Clear failed jobs
-npm run queues:clean
+pnpm run queues:clean
 ```
 
 ### Debug Mode

@@ -45,21 +45,17 @@ export const authMiddleware: RequestHandler = async (req, res: Response, next: N
             return next(ApiError.Unauthorized('Authentication token is missing or invalid'));
         }
         const token = authHeader.substring(7);
-        
         // Validate token format
         if (!token || token.length < 10) {
             return next(ApiError.Unauthorized('Invalid token format'));
         }
-
         let payload: any;
-
         try {
             payload = authUtils.verifyAccessToken(token);
             if (!payload || !payload.id) {
                 logger.warn('Invalid JWT payload structure', { payload });
                 return next(ApiError.Unauthorized('Invalid authentication token'));
             }
-
             // Enhanced token revocation check
             if (payload.jti) {
                 const isRevoked = await authUtils.isTokenRevoked(payload.jti);
@@ -68,17 +64,14 @@ export const authMiddleware: RequestHandler = async (req, res: Response, next: N
                     return next(ApiError.Unauthorized('Token has been revoked'));
                 }
             }
-
             // Check token age for additional security
             if (payload.iat && Date.now() / 1000 - payload.iat > 24 * 60 * 60) { // 24 hours
                 logger.warn('Old token used', { userId: payload.id, tokenAge: Date.now() / 1000 - payload.iat });
             }
-
         } catch (error) {
             logger.error('JWT verification failed', { error, token: token.substring(0, 10) + '...' });
             return next(ApiError.Unauthorized('Invalid or expired authentication token'));
         }
-
         // Fetch user from database with enhanced security checks
         const user = await prisma.user.findUnique({
             where: { 
@@ -94,17 +87,14 @@ export const authMiddleware: RequestHandler = async (req, res: Response, next: N
                 lastLogin: true,
             }
         });
-
         if (!user) {
             logger.warn('Authentication failed: User not found or deleted', { userId: payload.id });
             return next(ApiError.Unauthorized('User not found'));
         }
-
         if (!user.isVerified) {
             logger.warn('Authentication failed: User not verified', { userId: payload.id });
             return next(ApiError.Unauthorized('Account not verified'));
         }
-
         // Update last login time (throttled to avoid excessive DB writes)
         if (!user.lastLogin || Date.now() - user.lastLogin.getTime() > 5 * 60 * 1000) { // 5 minutes
             await prisma.user.update({
@@ -112,17 +102,15 @@ export const authMiddleware: RequestHandler = async (req, res: Response, next: N
                 data: { lastLogin: new Date() }
             }).catch(err => logger.warn('Failed to update last login', { userId: user.id, error: err.message }));
         }
-
+        // Use 'role' consistently
         const authenticatedUser: AuthenticatedUser = {
             id: user.id,
             isVerified: user.isVerified,
             isProUser: user.userType === UserType.PREMIUM,
             role: user.userRole || UserRole.USER,
         };
-
         authReq.user = authenticatedUser;
         logger.info('User authenticated successfully', { userId: authReq.user.id, role: authReq.user.role });
-
         next();
     } catch (error) {
         logger.error('Authentication error', { error, ip: req.ip, userAgent: req.get('User-Agent') });

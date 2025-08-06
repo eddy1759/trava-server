@@ -11,6 +11,10 @@ const model = genAI.getGenerativeModel({ model: 'text-embedding-004' }); // Use 
  * @returns A promise that resolves to an array of number arrays (embeddings).
  */
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
+    if (!Array.isArray(texts) || texts.length === 0) {
+        logger.warn('generateEmbeddings called with empty input.');
+        return [];
+    }
     try {
         const result = await model.batchEmbedContents({
             requests: texts.map(text => ({
@@ -18,11 +22,10 @@ export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
                 taskType: TaskType.RETRIEVAL_DOCUMENT
             })),
         });
-        // 🔍 DEBUG: Check actual dimensions
+        // Use logger.debug for embedding dimensions
         if (result.embeddings && result.embeddings.length > 0) {
-            console.log('✅ Embedding dimensions:', result.embeddings[0].values.length);
+            logger.debug('Embedding dimensions:', result.embeddings[0].values.length);
         }
-
         return result.embeddings.map(e => e.values);
     } catch (error) {
         logger.error('Failed to generate embeddings:', error);

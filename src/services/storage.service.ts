@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { v2 as cloudinary } from 'cloudinary';
 import { nanoid } from 'nanoid';
 import path from 'path';
@@ -8,12 +8,15 @@ import CONFIG from '../config/env';
 import { PHOTO_CONFIG } from '../features/photo/photo.config';
 
 if (CONFIG.NODE_ENV === 'development') {
+    if (!CONFIG.CLOUD_NAME || !CONFIG.CLOUDINARY_API_KEY || !CONFIG.CLOUDINARY_API_SECRET) {
+        throw new Error('Cloudinary config missing in development environment');
+    }
     cloudinary.config({
         cloud_name: CONFIG.CLOUD_NAME,
         api_key: CONFIG.CLOUDINARY_API_KEY,
         api_secret: CONFIG.CLOUDINARY_API_SECRET,
         secure: true
-    })
+    });
 }
 
 const s3Client = new S3Client({region: CONFIG.AWS_REGION})
@@ -48,16 +51,18 @@ async function uploadToCloudinary(file: Express.Multer.File, folder: string): Pr
 }
 
 async function uploadFile(file: Express.Multer.File, folder = 'photos'): Promise<string> {
-    // REFACTOR: Image validation is now part of this centralized service.
-    const metadata = await sharp(file.buffer).metadata().catch(() => {
+    // Validate image using sharp
+    let metadata;
+    try {
+        metadata = await sharp(file.buffer).metadata();
+    } catch {
         throw ApiError.BadRequest('Invalid image format. Could not read metadata.');
-    });
-
-    if (metadata.width && metadata.width > PHOTO_CONFIG.MAX_DIMENSIONS.width || 
-        metadata.height && metadata.height > PHOTO_CONFIG.MAX_DIMENSIONS.height) {
+    }
+    if ((metadata.width && metadata.width > PHOTO_CONFIG.MAX_DIMENSIONS.width) || 
+        (metadata.height && metadata.height > PHOTO_CONFIG.MAX_DIMENSIONS.height)) {
         throw ApiError.BadRequest(`Image dimensions must not exceed ${PHOTO_CONFIG.MAX_DIMENSIONS.width}x${PHOTO_CONFIG.MAX_DIMENSIONS.height}.`);
     }
-
+    // Choose storage provider based on environment
     if (CONFIG.NODE_ENV === 'development') {
         return uploadToCloudinary(file, folder);
     } else {
@@ -71,11 +76,11 @@ async function deleteFile(url: string): Promise<void> {
         if (!publicId) throw ApiError.BadRequest('Invalid Cloudinary URL.');
         await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
     } else {
+        // Use DeleteObjectCommand for S3 deletes
         const key = url.split('/').slice(-2).join('/');
-        const command = new PutObjectCommand({
+        const command = new DeleteObjectCommand({
             Bucket: CONFIG.AWS_S3_BUCKET!,
-            Key: key,
-            Body: null // S3 delete operation
+            Key: key
         });
         await s3Client.send(command);
     }

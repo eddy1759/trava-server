@@ -4,8 +4,6 @@ import rateLimit from 'express-rate-limit';
 import { StatusCodes } from 'http-status-codes';
 import { redisService } from '../services/redis';
 import logger from '../utils/logger';
-import ApiError from '../utils/ApiError';
-import { create } from 'domain';
 
 
 const redisClient = redisService.getClient();
@@ -15,6 +13,7 @@ const store = new RedisStore({
   prefix: 'rl'
 })
 
+// keyGenerator must be synchronous and return a string, not a Promise.
 const createRateLimiter = (
     windowMs: number, 
     max: number, 
@@ -36,7 +35,24 @@ const createRateLimiter = (
         keyGenerator: keyGenerator,
         // Handler for when the rate limit is exceeded
         handler: (req, res, next, options) => {
-            logger.warn(`Rate limit exceeded for key: ${options.keyGenerator(req, res)} on path: ${req.path}`);
+            // Log the key used for rate limiting (fall back to IP if keyGenerator is not defined)
+            let key = 'unknown';
+            // NOTE: All keyGenerators in this file only use req, but express-rate-limit handler passes (req, res)
+            if (typeof options.keyGenerator === 'function') {
+                try {
+                    const maybeKey = options.keyGenerator(req, res);
+                    if (typeof maybeKey === 'string') {
+                        key = maybeKey;
+                    } else {
+                        key = req.ip;
+                    }
+                } catch (e) {
+                    key = req.ip;
+                }
+            } else {
+                key = req.ip;
+            }
+            logger.warn(`Rate limit exceeded for key: ${key} on path: ${req.path}`);
             res.status(options.statusCode).send(options.message);
         },
     });
@@ -118,13 +134,14 @@ export const paymentRateLimiter = createRateLimiter(
 );
 
 
+// Webhook limiter uses a unique prefix to avoid collision with payment limiter
 export const webhookRateLimiter = createRateLimiter(
-5 * 60 * 1000, // 5 minutes
-500, // A higher limit for Stripe's potential burst of events
-'Webhook rate limit exceeded',
-(req) => {
+  5 * 60 * 1000, // 5 minutes
+  500, // A higher limit for Stripe's potential burst of events
+  'Webhook rate limit exceeded',
+  (req) => {
     const forwarded = req.get('X-Forwarded-For');
     const ip = forwarded ? forwarded.split(',')[0].trim() : req.ip;
-    return `payment:${ ip }`
+    return `webhook:${ ip }`;
   }
 );
